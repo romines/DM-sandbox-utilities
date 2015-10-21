@@ -16,48 +16,127 @@ var _ = { };
   // Return an array of the first n elements of an array. If n is undefined,
   // return just the first element.
   _.first = function(array, n) {
+    if(typeof n === 'undefined'){
+      return array[0];
+    } else {
+      var newArr = [];
+      for (var i=0; i<n; i++) {
+        newArr.push(array[i]);
+      }
+      return newArr.slice(0,array.length);
+    }
   };
 
   // Like first, but for the last elements. If n is undefined, return just the
   // last element.
   _.last = function(array, n) {
+    if (typeof n === 'undefined') {
+      return array[array.length - 1];
+    } else if ( n >= array.length ) {
+      return array;
+    } else {
+      var newArr = [];
+      for (var i=array.length -n; i<array.length; i++) {
+        newArr.push(array[i]);
+      }
+      return newArr.slice(0,array.length);
+    }
   };
 
   // Call iterator(value, key, collection) for each element of collection.
   // Accepts both arrays and objects.
   _.each = function(collection, iterator) {
+    for (var key in collection) {
+      iterator(collection[key], key, collection);
+    }
   };
 
   // Returns the index at which value can be found in the array, or -1 if value
   // is not present in the array.
   _.indexOf = function(array, target){
+    var ind = -1;
+    for (var i=0; i<array.length; i++) {
+      if (array[i] === target) {
+        return i;
+      }
+    }
+    return ind;
   };
 
   // Return all elements of an array that pass a truth test.
   _.filter = function(collection, iterator) {
+    var newArr = [];
+    collection.forEach(
+      function(item){
+        if (iterator(item)) {
+          newArr.push(item);
+        }
+      }
+    );
+    return newArr;
   };
 
   // Return all elements of an array that don't pass a truth test.
   _.reject = function(collection, iterator) {
+    var newArr = [];
+    collection.forEach(
+      function(item){
+        if (!iterator(item)) {
+          newArr.push(item);
+        }
+      }
+    );
+    return newArr;
   };
 
   // Produce a duplicate-free version of the array.
   _.uniq = function(array) {
+
+    var sorted = array.sort();
+
+    var newArr = [sorted[0]];
+    compare(0);
+    return newArr;
+
+    function compare(ind) {
+      if (ind == sorted.length-1) {
+        return;
+      }
+      if (sorted[ind+1] !== sorted[ind]) {
+        newArr.push(sorted[ind+1]);
+      }
+      compare(ind+1);
+    }
   };
 
 
   // Return the results of applying an iterator to each element.
   _.map = function(array, iterator) {
+    var newArr = [];
+    for (var i=0; i<array.length; i++) {
+      newArr[i] = iterator(array[i]);
+    }
+    return newArr;
   };
 
   // Takes an array of objects and returns and array of the values of
   // a certain property in it. E.g. take an array of people and return
   // an array of just their ages
   _.pluck = function(array, propertyName) {
+    var newArr = [];
+    for (var i=0; i<array.length; i++) {
+      newArr.push(
+        array[i][propertyName]
+      );
+    }
+    return newArr;
   };
 
   // Calls the method named by methodName on each value in the list.
   _.invoke = function(list, methodName, args) {
+    for (var i=0; i<list.length; i++) {
+      window[methodName](list[i]);
+    }
   };
 
   // Reduces an array or object to a single value by repetitively calling
