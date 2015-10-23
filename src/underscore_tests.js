@@ -134,31 +134,100 @@ var _ = { };
 
   // Calls the method named by methodName on each value in the list.
   _.invoke = function(list, methodName, args) {
-    for (var i=0; i<list.length; i++) {
-      window[methodName](list[i]);
+    var argsArray = [];
+    if (typeof args !== 'undefined' && args.constructor === Array) {
+      argsArray.concat(args);
+      }
+
+    if (typeof methodName == 'function') {
+      for (var i=0; i<list.length; i++) {
+        list[i] = methodName.apply(list[i], argsArray);
+      }
+    } else if (typeof methodName == 'string') {
+        for (var i=0; i<list.length; i++) {
+        list[i][methodName].apply(list[i], argsArray);
+      }
     }
+    return list;
   };
 
   // Reduces an array or object to a single value by repetitively calling
   // iterator(previousValue, item) for each item. previousValue should be
   // the return value of the previous iterator call.
   _.reduce = function(collection, iterator, initialValue) {
+    if (typeof initialValue == 'undefined') {
+      var soFar = collection[0];
+      collection.shift();
+    } else {
+      var soFar = initialValue;
+    }
+    while (collection.length > 0) {
+      soFar = iterator(soFar, collection[0]);
+      collection.shift();
+    }
+    return soFar;
+
   };
 
   // Determine if the array or object contains a given value (using `===`).
   _.contains = function(collection, target) {
+    var newArr = [];
+
+    traverse(collection, target)
+
+    return (newArr.length > 0);
+
+    function traverse(o, target) {
+      for (var i in o) {
+        if (o[i] === target) {
+          newArr.push(o[i]);
+        }
+        if (o[i] !== null && typeof (o[i])=="object") {
+          //keep going
+          traverse(o[i], target)
+        }
+      }
+    }
+
+
   };
+
+
+
+
 
 
   // Determine whether all of the elements match a truth test.
   _.every = function(collection, iterator) {
+    if (!iterator) {return !!collection};
+    var bool = true;
+    var i = 0;
+    while (bool && i<collection.length) {
+      bool = !!(iterator(collection[i]));
+      i++;
+    }
+    return bool;
   };
 
   // Determine whether any of the elements pass a truth test. If no iterator is
   // provided, provide a default one
-  _.some = function(collection, iterator) {
-  };
 
+
+
+  _.some = function(collection, iterator) {
+    if (typeof iterator == 'undefined') {
+      iterator = function(a) {
+        return !!a;
+      }
+    }
+    var bool = false;
+    var i = 0;
+    while (!bool && i<collection.length) {
+      bool = !!(iterator(collection[i]));
+      i++;
+    }
+    return bool;
+  };
 
   /**
    * OBJECTS
@@ -169,12 +238,32 @@ var _ = { };
 
   // Extend a given object with all the properties of the passed in
   // object(s).
-  _.extend = function(obj) {
+  _.extend = function(inObj) {
+    for (var i = 1; i < arguments.length; i++) {
+      var argObj = arguments[i];
+      for (var key in argObj) {
+        if (typeof argObj[key] !== undefined ) {
+          inObj[key] = argObj[key];
+        }
+      }
+    }
+    return inObj;
   };
 
   // Like extend, but doesn't ever overwrite a key that already
   // exists in obj
-  _.defaults = function(obj) {
+  _.defaults = function(inObj) {
+    for (var i = 1; i < arguments.length; i++) {
+      var argObj = arguments[i];
+      for (var key in argObj) {
+        if (!inObj.hasOwnProperty(key) || typeof inObj[key] == 'undefined'){
+          if (typeof argObj[key] !== 'undefined' ) {
+            inObj[key] = argObj[key];
+          }
+        }
+      }
+    }
+    return inObj;
   };
 
 
@@ -186,6 +275,15 @@ var _ = { };
   // Return a function that can be called at most one time. Subsequent calls
   // should return the previously returned value.
   _.once = function(func) {
+    var beenRun = false;
+    var firstRun = null;
+    return function() {
+      if (!beenRun) {
+        beenRun = true;
+        firstRun = func();
+        return firstRun;
+      }
+    }
   };
 
   // Memoize an expensive function by storing its results. You may assume
@@ -195,6 +293,13 @@ var _ = { };
   // already computed the result for the given argument and return that value
   // instead if possible.
   _.memoize = function(func) {
+    var results = {};
+    return function(a){
+      if (!results.hasOwnProperty(a)) {
+        results[a] = func(a);
+      }
+      return results[a];
+    }
   };
 
   // Delays a function for the given number of milliseconds, and then calls
